@@ -1,0 +1,35 @@
+---
+# tasks file for ansible-role-redis
+- name: Install redis on RedHat systems
+  block:
+    - name: ensure epel repo is installed RedHat
+      yum:
+        name: epel-release
+        state: present
+        update_cache: true
+    - name: ensure redis is installed RedHat
+      yum:
+        name: redis
+        state: present
+        update_cache: yes
+  when: ansible_os_family == 'RedHat'
+
+- name: Install redis on Debian based systems
+  block:
+    - name: ensure redis is installed (debian)
+      apt:
+        name: redis-server
+        state: present
+        update_cache: true
+    - name: disable ipv6 binding (debian)
+      lineinfile:
+        path: /etc/redis/redis.conf
+        regex: '^bind'
+        line: bind 127.0.0.1
+  when: ansible_os_family == 'Debian'
+
+- name: ensure redis service is started and enabled
+  service:
+    name: redis
+    state: started
+    enabled: true
